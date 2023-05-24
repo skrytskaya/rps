@@ -1,5 +1,5 @@
 import { type NextPage } from "next";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { PlayerNameForm } from "~/components/playernameform";
 interface Option {
   id: number;
@@ -7,8 +7,15 @@ interface Option {
   icon: string;
 }
 
+interface Score {
+  wins: number;
+  draws: number;
+  losses: number;
+}
 interface Player {
   name: string;
+  score: Score;
+  totalGames: number;
 }
 
 type WinnerOptions = "Computer" | "Player" | "Draw";
@@ -18,6 +25,8 @@ const options: Option[] = [
   { id: 1, name: "paper", icon: "📄" },
   { id: 2, name: "scissors", icon: "✂️" },
 ];
+
+// TODO vik: fix issue with loosing score and count of the last game
 
 const Home: NextPage = () => {
   const [playerName, setPlayerName] = useState<Player["name"]>("");
@@ -37,6 +46,29 @@ const Home: NextPage = () => {
     }
   }, []);
 
+  const updatePlayerScore = useCallback(
+    (name: string, result: string) => {
+      setPlayers((prevPlayers) =>
+        prevPlayers.map((player) => {
+          if (player.name === name) {
+            return {
+              ...player,
+              score: {
+                ...player.score,
+                [result as keyof typeof player.score]:
+                  player.score[result as keyof typeof player.score] + 1,
+              },
+              totalGames: player.totalGames + 1,
+            };
+          }
+          return player;
+        })
+      );
+      localStorage.setItem("players", JSON.stringify(players));
+    },
+    [players]
+  );
+
   useEffect(() => {
     let countdownTimer: NodeJS.Timeout;
 
@@ -51,11 +83,12 @@ const Home: NextPage = () => {
       setComputerOption(selectedOption);
       setWinner("Computer");
       setPlayerOption({ icon: "🤷", name: "none", id: options.length + 1 });
+      updatePlayerScore(playerName, "losses");
       setIsGameOn(false);
     }
 
     return () => clearTimeout(countdownTimer);
-  }, [countdown, isGameOn]);
+  }, [countdown, isGameOn, playerName, updatePlayerScore]);
 
   const handlePlayerOption = (optionId: number) => {
     setPlayerOption(options[optionId] ?? null);
@@ -71,14 +104,17 @@ const Home: NextPage = () => {
   ) => {
     if (playerOption?.id === computerOption?.id) {
       setWinner("Draw");
+      updatePlayerScore(playerName, "draws");
     } else if (
       (playerOption?.name === "rock" && computerOption?.name === "scissors") ||
       (playerOption?.name === "scissors" && computerOption?.name === "paper") ||
       (playerOption?.name === "paper" && computerOption?.name === "rock")
     ) {
       setWinner("Player");
+      updatePlayerScore(playerName, "wins");
     } else {
       setWinner("Computer");
+      updatePlayerScore(playerName, "losses");
     }
     setIsGameOn(false);
   };
@@ -98,7 +134,11 @@ const Home: NextPage = () => {
     setPlayerName(name);
     const existingPlayer = players.find((player) => player.name === name);
     if (!existingPlayer) {
-      const newPlayer = { name };
+      const newPlayer = {
+        name,
+        score: { wins: 0, draws: 0, losses: 0 },
+        totalGames: 0,
+      };
       const updatedPlayers = [...players, newPlayer];
       setPlayers(updatedPlayers);
       localStorage.setItem("players", JSON.stringify(updatedPlayers));
@@ -138,10 +178,14 @@ const Home: NextPage = () => {
               <p>Winner: {winner}</p>
             </div>
           )}
-          <h2>All Players</h2>
+          <h2>All Players & Scores</h2>
           <ul>
             {players.map((player, index) => (
-              <li key={index}>{player.name}</li>
+              <li key={index}>
+                {player.name} - Wins: {player.score.wins}, Draws:{" "}
+                {player.score.draws}, Losses: {player.score.losses} - Total
+                Games: {player.totalGames}
+              </li>
             ))}
           </ul>
         </>
