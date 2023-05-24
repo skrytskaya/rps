@@ -1,12 +1,17 @@
 import { type NextPage } from "next";
 import { useEffect, useState } from "react";
+import { PlayerNameForm } from "~/components/playernameform";
 interface Option {
   id: number;
   name: string;
   icon: string;
 }
 
-type WinnerOptions = "Computer" | "Player" | "DRAW";
+interface Player {
+  name: string;
+}
+
+type WinnerOptions = "Computer" | "Player" | "Draw";
 
 const options: Option[] = [
   { id: 0, name: "rock", icon: "🪨" },
@@ -15,11 +20,22 @@ const options: Option[] = [
 ];
 
 const Home: NextPage = () => {
+  const [playerName, setPlayerName] = useState<Player["name"]>("");
+  const [players, setPlayers] = useState<Player[]>([]);
   const [computerOption, setComputerOption] = useState<Option | null>(null);
   const [playerOption, setPlayerOption] = useState<Option | null>(null);
   const [winner, setWinner] = useState<WinnerOptions | null>(null);
   const [isGameOn, setIsGameOn] = useState(false);
   const [countdown, setCountdown] = useState(3);
+
+  useEffect(() => {
+    const savedPlayers = JSON.parse(
+      localStorage.getItem("players") ?? "[]"
+    ) as Player[];
+    if (savedPlayers) {
+      setPlayers(savedPlayers);
+    }
+  }, []);
 
   useEffect(() => {
     let countdownTimer: NodeJS.Timeout;
@@ -54,7 +70,7 @@ const Home: NextPage = () => {
     computerOption: Option | null
   ) => {
     if (playerOption?.id === computerOption?.id) {
-      setWinner("DRAW");
+      setWinner("Draw");
     } else if (
       (playerOption?.name === "rock" && computerOption?.name === "scissors") ||
       (playerOption?.name === "scissors" && computerOption?.name === "paper") ||
@@ -74,33 +90,61 @@ const Home: NextPage = () => {
     setCountdown(3);
     setIsGameOn(true);
   };
+
+  const handlePlayerSubmit = (name: string) => {
+    if (name.trim() === "") {
+      return;
+    }
+    setPlayerName(name);
+    const existingPlayer = players.find((player) => player.name === name);
+    if (!existingPlayer) {
+      const newPlayer = { name };
+      const updatedPlayers = [...players, newPlayer];
+      setPlayers(updatedPlayers);
+      localStorage.setItem("players", JSON.stringify(updatedPlayers));
+    }
+  };
+
   return (
     <div>
-      <button disabled={isGameOn} onClick={handleStartGame}>
-        Start
-      </button>
-      <p>Time Remaining: {countdown}</p>
-      <>
-        <p>Choose your option:</p>
-        <ul className="options">
-          {options.map((option) => (
-            <button
-              onClick={() => handlePlayerOption(option.id)}
-              key={option.id}
-              disabled={!isGameOn}
-            >
-              {option.icon}
-            </button>
-          ))}
-        </ul>
-      </>
-      {computerOption && playerOption && (
-        <div>
-          <h2>Results</h2>
-          <p>Player: {playerOption.icon}</p>
-          <p>Computer: {computerOption.icon}</p>
-          <p>Winner: {winner}</p>
-        </div>
+      <p>Welcome, {playerName || "Player"}!</p>
+      {!playerName ? (
+        <PlayerNameForm onPlayerSubmit={handlePlayerSubmit} />
+      ) : (
+        <>
+          <button disabled={isGameOn} onClick={handleStartGame}>
+            Start
+          </button>
+          <p>Time Remaining: {countdown}</p>
+          <>
+            <p>Choose your option:</p>
+            <ul className="options">
+              {options.map((option) => (
+                <button
+                  onClick={() => handlePlayerOption(option.id)}
+                  key={option.id}
+                  disabled={!isGameOn}
+                >
+                  {option.icon}
+                </button>
+              ))}
+            </ul>
+          </>
+          {computerOption && playerOption && (
+            <div>
+              <h2>Results</h2>
+              <p>Player: {playerOption.icon}</p>
+              <p>Computer: {computerOption.icon}</p>
+              <p>Winner: {winner}</p>
+            </div>
+          )}
+          <h2>All Players</h2>
+          <ul>
+            {players.map((player, index) => (
+              <li key={index}>{player.name}</li>
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );
