@@ -9,7 +9,6 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       <Head>
         <title>Rock Paper Scissors</title>
         <meta name="description" content="🪨📄✂️" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
       <Component {...pageProps} />
     </>
