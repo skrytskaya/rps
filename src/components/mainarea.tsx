@@ -94,6 +94,7 @@ export const MainArea = ({
       setPlayerOption(skippedOption);
       determineWinner(skippedOption);
     }
+
     return () => clearTimeout(countdownTimer);
   }, [countdown, determineWinner, isGameOn, playerName, playerOption, winner]);
 
@@ -127,6 +128,7 @@ export const MainArea = ({
       localStorage.setItem("players", JSON.stringify(updatedPlayers));
     }
   };
+
   return (
     <div className="flex flex-col items-center justify-center">
       <h2 className="p-2 text-2xl font-bold">

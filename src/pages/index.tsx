@@ -4,7 +4,6 @@ import { Layout } from "~/components/layout";
 import { MainArea } from "~/components/mainarea";
 import { ScoreArea } from "~/components/scorearea";
 
-const isBrowser = typeof window !== "undefined";
 interface Score {
   wins: number;
   draws: number;
@@ -16,35 +15,41 @@ interface Player {
   totalGames: number;
 }
 const Home: NextPage = () => {
-  const [players, setPlayers] = useState<Player[]>(() => {
-    if (isBrowser) {
-      const savedPlayers = JSON.parse(
-        localStorage.getItem("players") ?? "[]"
-      ) as Player[];
-      return savedPlayers ? savedPlayers : [];
-    } else {
-      return [];
-    }
-  });
+  const [players, setPlayers] = useState<Player[]>([]);
 
   useEffect(() => {
-    localStorage.setItem("players", JSON.stringify(players));
-  }, [players]);
+    const savedPlayers = JSON.parse(
+      localStorage.getItem("players") ?? "[]"
+    ) as Player[];
+    setPlayers(savedPlayers);
+  }, []);
 
   const updatePlayerScore = useCallback((name: string, result: string) => {
     setPlayers((prevPlayers) =>
       prevPlayers.map((player) => {
         if (player.name === name) {
-          return {
+          const updatedScore = {
+            ...player.score,
+            [result as keyof typeof player.score]:
+              player.score[result as keyof typeof player.score] + 1,
+          };
+
+          const updatedPlayer = {
             ...player,
-            score: {
-              ...player.score,
-              [result as keyof typeof player.score]:
-                player.score[result as keyof typeof player.score] + 1,
-            },
+            score: updatedScore,
             totalGames: player.totalGames + 1,
           };
+
+          localStorage.setItem(
+            "players",
+            JSON.stringify(
+              prevPlayers.map((p) => (p.name === name ? updatedPlayer : p))
+            )
+          );
+
+          return updatedPlayer;
         }
+
         return player;
       })
     );
