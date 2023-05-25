@@ -4,11 +4,6 @@ import { Layout } from "~/components/layout";
 import { MainArea } from "~/components/mainarea";
 import { ScoreArea } from "~/components/scorearea";
 
-import dynamic from 'next/dynamic'
-const Table = dynamic(() => import("../components/scorearea"), {
-ssr: false,
-});
-
 const isBrowser = typeof window !== "undefined";
 interface Score {
   wins: number;
@@ -64,7 +59,7 @@ const Home: NextPage = () => {
           updatePlayerScore={updatePlayerScore}
         />
       }
-      rightComponent={<Table players={players} />}
+      rightComponent={<ScoreArea players={players} />}
     />
   );
 };
