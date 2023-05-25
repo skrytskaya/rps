@@ -19,7 +19,7 @@ export const ScoreArea = ({ players }: ScoreAreaProps) => {
     <div className="flex flex-col items-center justify-center">
       <h2 className="p-2 text-2xl font-bold">All Players & Scores</h2>
       {players.length === 0 ? (
-        <>No players</>
+        <>No players yet</>
       ) : (
         <ul>
           {players.map((player, idx) => (
