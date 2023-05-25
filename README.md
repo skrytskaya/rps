@@ -14,9 +14,9 @@ Clone the repository to your local machine or download the source code as a ZIP 
 
 Open a terminal or command prompt and navigate to the project's root directory.
 
-Install the dependencies by running the following command: npm install
+Install the dependencies by running the following command: `npm install`
 
-Once the dependencies are installed, start the development server with the following command: npm run dev
+Once the dependencies are installed, start the development server with the following command: `npm run dev`
 
 The app will be running locally at http://localhost:3000.
 # Create T3 App
