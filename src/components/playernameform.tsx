@@ -14,7 +14,7 @@ export const PlayerNameForm = ({ onPlayerSubmit }: PlayerNameFormProps) => {
 
   const handleSubmit = () => {
     if (playerName.trim() === "") {
-      setErrorMessage("Please enter a valid player name");
+      setErrorMessage("Invalid player name");
       return;
     }
     onPlayerSubmit(playerName);
@@ -34,10 +34,11 @@ export const PlayerNameForm = ({ onPlayerSubmit }: PlayerNameFormProps) => {
       >
         CONTINUE
       </button>
-      {/* TODO: fix jumping */}
-      {errorMessage ? (
-        <div className="mb-4 h-10 px-4 py-2 text-red-700">{errorMessage}</div>
-      ) : null}
+      <div className="h-10">
+        {errorMessage && (
+          <div className="h-full px-4 py-2 text-red-700">{errorMessage}</div>
+        )}
+      </div>
     </>
   );
 };
